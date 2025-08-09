@@ -1,0 +1,288 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Smart Multi-Disease Predictor</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root{
+      --primary:#2b9ec9;
+      --accent:#26c6a8;
+      --bg1:#e6f7fb;
+      --card-bg: rgba(255,255,255,0.95);
+      --glass: rgba(255,255,255,0.6);
+    }
+    *{box-sizing:border-box;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;}
+    body{margin:0;background:linear-gradient(135deg,var(--bg1),#dff3fb);min-height:100vh;padding:28px;display:flex;justify-content:center;}
+    .container{width:100%;max-width:1100px;display:grid;grid-template-columns:1fr 380px;gap:24px;align-items:start;}
+    .card{background:var(--card-bg);border-radius:14px;padding:18px;box-shadow:0 10px 30px rgba(15,30,40,0.08);backdrop-filter: blur(6px);}
+    header h1{margin:0;color:#063b48;font-weight:700;font-size:1.6rem}
+    .lead{color:#145a66;margin-top:8px;font-size:0.95rem}
+    form{display:grid;gap:10px}
+    label{font-weight:600;color:#09424a;font-size:0.9rem}
+    input[type=text], input[type=number], select, textarea {
+      width:100%;padding:10px;border-radius:8px;border:1px solid #d5e9ef;background:#fff;
+    }
+    select[multiple]{height:160px}
+    .row{display:flex;gap:10px}
+    .row > *{flex:1}
+    button.primary{
+      background:linear-gradient(90deg,var(--primary),#1b82a6);
+      color:white;border:none;padding:12px 14px;border-radius:10px;font-weight:700;cursor:pointer;
+      box-shadow:0 6px 18px rgba(40,120,160,0.18);
+    }
+    button.ghost{background:transparent;border:1px solid #cfeaf3;padding:10px;border-radius:8px;cursor:pointer}
+    .results{margin-top:12px}
+    .flex-between{display:flex;justify-content:space-between;align-items:center}
+    .badge{background:var(--accent);color:white;padding:6px 10px;border-radius:999px;font-weight:600;font-size:0.85rem}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    th,td{padding:8px;border-bottom:1px dashed #e6f0f2;text-align:left}
+    /* Chat widget */
+    #chat-widget { position: fixed; right: 24px; bottom: 24px; z-index:9999; }
+    .chat-btn{width:64px;height:64px;border-radius:50%;background:var(--primary);display:flex;align-items:center;justify-content:center;color:#fff;font-size:24px;box-shadow:0 8px 22px rgba(20,90,110,0.22);cursor:pointer;border:none}
+    .chat-window{width:340px;max-height:480px;background:white;border-radius:12px;overflow:hidden;box-shadow:0 12px 40px rgba(10,30,40,0.2);display:flex;flex-direction:column;}
+    .chat-header{padding:12px;background:linear-gradient(90deg,var(--primary),#1b82a6);color:#fff;display:flex;justify-content:space-between;align-items:center}
+    .chat-body{padding:12px;flex:1;overflow:auto;font-size:14px}
+    .msg{margin-bottom:10px}
+    .msg.bot{color:#07323a;background:#f1fbff;padding:8px;border-radius:8px;display:inline-block}
+    .msg.user{color:#fff;background:var(--primary);padding:8px;border-radius:8px;display:inline-block;align-self:flex-end}
+    .chat-input{padding:10px;border-top:1px solid #eee;display:flex;gap:8px}
+    .quick-symptoms{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+    .quick-symptoms button{background:#f4fbff;border:1px solid #d3eff7;padding:6px 8px;border-radius:8px;cursor:pointer;font-size:13px}
+    .small{font-size:12px;color:#54757f}
+    /* responsive */
+    @media(max-width:980px){ .container{grid-template-columns:1fr; padding:0 12px} .chat-window{right:12px;bottom:90px} }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <header>
+        <h1>Smart Multi-Disease Predictor</h1>
+        <div class="lead">Choose symptoms (multiple), we'll predict top likely conditions and show precautions.</div>
+      </header>
+
+      <form method="POST" id="predict-form">
+        {% csrf_token %}
+
+        <div class="row">
+          <div>
+            <label>Name</label>
+            <input name="name" type="text" placeholder="Your name" required />
+          </div>
+          <div>
+            <label>Age</label>
+            <input name="age" type="number" min="0" placeholder="Age" required />
+          </div>
+        </div>
+
+        <label>Gender</label>
+        <select name="gender" required>
+            <option value="Male">Male</option><option value="Female">Female</option><option value="Other">Other</option>
+        </select>
+
+        <label>Symptoms (select multiple)</label>
+        <select name="symptoms" id="symptoms" multiple required>
+          <!-- Extended symptom list: keep these values consistent with your dataset symptom names -->
+          <option value="fever">Fever</option>
+          <option value="cough">Cough</option>
+          <option value="fatigue">Fatigue</option>
+          <option value="headache">Headache</option>
+          <option value="nausea">Nausea</option>
+          <option value="vomiting">Vomiting</option>
+          <option value="abdominal_pain">Abdominal Pain</option>
+          <option value="diarrhea">Diarrhea</option>
+          <option value="sore_throat">Sore Throat</option>
+          <option value="shortness_of_breath">Shortness of Breath</option>
+          <option value="chest_pain">Chest Pain</option>
+          <option value="dizziness">Dizziness</option>
+          <option value="skin_rash">Skin Rash</option>
+          <option value="itching">Itching</option>
+          <option value="blurred_vision">Blurred Vision</option>
+          <option value="joint_pain">Joint Pain</option>
+          <option value="weight_loss">Weight Loss</option>
+          <option value="high_blood_sugar">High Blood Sugar</option>
+          <option value="sweating">Excess Sweating</option>
+          <option value="redness">Redness</option>
+          <option value="ear_pain">Ear Pain</option>
+          <option value="loss_of_smell">Loss of Smell</option>
+          <option value="loss_of_taste">Loss of Taste</option>
+        </select>
+
+        <div class="row">
+          <div>
+            <label>Location (auto)</label>
+            <input name="location" id="location" type="text" placeholder="City" />
+            <div class="small">Auto filled using browser location & weather (consent required)</div>
+          </div>
+          <div>
+            <label>Temperature (°C)</label>
+            <input name="temperature" id="temperature" type="number" step="0.1" />
+          </div>
+        </div>
+
+        <div class="row">
+          <div>
+            <label>Humidity (%)</label>
+            <input name="humidity" id="humidity" type="number" step="0.1" />
+          </div>
+          <div>
+            <label>Optional: rainfall (mm)</label>
+            <input name="rainfall" type="number" step="0.1" />
+          </div>
+        </div>
+
+        <div style="display:flex;gap:8px;margin-top:10px;">
+          <button type="submit" class="primary">Predict</button>
+          <button type="button" class="ghost" id="clear-form">Reset</button>
+        </div>
+      </form>
+
+      {% if predicted_disease %}
+      <div class="results card">
+        <div class="flex-between"><h3>Results</h3><span class="badge">Confidence: {{ top_diseases.0.probability }}%</span></div>
+        <p><strong>Name:</strong> {{ name }} &nbsp; <strong class="small">Location:</strong> {{ location }}</p>
+
+        <h4>Top Predictions</h4>
+        <table>
+          <tr><th>Disease</th><th>Confidence (%)</th></tr>
+          {% for d in top_diseases %}
+            <tr><td>{{ d.name }}</td><td>{{ d.probability }}</td></tr>
+          {% endfor %}
+        </table>
+
+        <h4 style="margin-top:12px">Prescription / Advice</h4>
+        <p>{{ prescription }}</p>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Right column: tips, quick symptoms and precautions -->
+    <aside>
+      <div class="card">
+        <h3>Quick Symptom Tags</h3>
+        <div class="quick-symptoms" id="quickTags">
+          <!-- JavaScript will populate tags into the select (and make it addable) -->
+        </div>
+
+        <h3 style="margin-top:14px">Important</h3>
+        <p class="small">If the system flags any critical disease (Heart attack, Stroke, Sepsis, Cancer, Diabetes), it will prompt you to call emergency services and can send SOS email (if configured).</p>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h3>Precautionary Steps</h3>
+        <ul class="small">
+          <li>For fever & cough: rest, hydrate, check temperature & O₂ saturation.</li>
+          <li>For chest pain/shortness of breath: seek immediate medical attention.</li>
+          <li>For skin rashes: keep area clean, avoid scratching, see a dermatologist.</li>
+          <li>Always consult a medical professional for confirmation — this is an aid, not a diagnosis.</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <!-- Chat widget -->
+  <div id="chat-widget">
+    <button class="chat-btn" id="chatToggle">💬</button>
+    <div id="chatWindow" class="chat-window" style="display:none">
+      <div class="chat-header">
+        <div>
+          <strong>HealthBot</strong><br><span class="small">Ask about symptoms & precautions</span>
+        </div>
+        <button onclick="toggleChat()" style="background:transparent;border:none;color:#fff;cursor:pointer">✕</button>
+      </div>
+      <div class="chat-body" id="chatMessages">
+        <div class="msg bot">Hi — tell me your symptoms or click tags below. I'll suggest probable conditions & precautions.</div>
+      </div>
+      <div style="padding:10px;border-top:1px solid #f1f5f7">
+        <div style="display:flex;gap:8px">
+          <input id="chatInput" placeholder="Type symptoms (e.g. fever, cough)" style="flex:1;padding:8px;border-radius:8px;border:1px solid #e6f3f8" />
+          <button id="chatSend" class="primary" style="padding:8px 12px">Ask</button>
+        </div>
+        <div style="margin-top:8px" id="chatQuick">
+          <!-- quick symptom chips -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const QUICK_SYMPTOMS = ['fever','cough','fatigue','headache','nausea','shortness_of_breath','chest_pain','skin_rash','high_blood_sugar'];
+  const symptomsSelect = document.getElementById('symptoms');
+
+  // Populate quick tags area
+  const quickArea = document.getElementById('quickTags');
+  QUICK_SYMPTOMS.forEach(s=>{
+    const btn = document.createElement('button');
+    btn.textContent = s.replace(/_/g,' ');
+    btn.onclick = () => {
+      // add to multiple select if not present
+      for(let opt of symptomsSelect.options){
+        if(opt.value === s){ opt.selected = true; break; }
+      }
+    };
+    quickArea.appendChild(btn);
+  });
+
+  // Chat widget logic
+  function toggleChat(){ const w=document.getElementById('chatWindow'); w.style.display = (w.style.display==='flex')? 'none':'flex'; }
+  document.getElementById('chatToggle').addEventListener('click',()=> toggleChat());
+  document.getElementById('chatSend').addEventListener('click',async ()=>{
+    const msg = document.getElementById('chatInput').value.trim(); if(!msg) return;
+    addChat('user',msg);
+    document.getElementById('chatInput').value='';
+    // send to bot endpoint
+    try{
+      const res = await fetch('/chatbot', {method:'POST',headers:{'Content-Type':'application/json'}, body:JSON.stringify({message:msg})});
+      const data = await res.json();
+      addChat('bot', data.reply);
+    }catch(e){
+      addChat('bot','Sorry, bot error. Try again later.');
+    }
+  });
+
+  function addChat(who,msg){
+    const box = document.getElementById('chatMessages');
+    const div = document.createElement('div');
+    div.className = 'msg ' + (who==='bot'?'bot':'user');
+    div.textContent = (who==='bot'? 'HealthBot: ':'You: ') + msg;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // Auto-location + fetch weather via OpenWeatherMap (requires API key)
+  async function autoFillLocation() {
+    if(!navigator.geolocation) return;
+    try{
+      navigator.geolocation.getCurrentPosition(async (pos)=>{
+        const lat = pos.coords.latitude, lon = pos.coords.longitude;
+        // put your OpenWeatherMap API key here
+        const OWM_API_KEY = 'YOUR_OPENWEATHERMAP_API_KEY';
+        if(!OWM_API_KEY) return;
+        const url = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&units=metric&appid=${OWM_API_KEY}`;
+        const resp = await fetch(url);
+        if(!resp.ok) return;
+        const data = await resp.json();
+        document.getElementById('location').value = data.name || '';
+        document.getElementById('temperature').value = data.main?.temp ?? '';
+        document.getElementById('humidity').value = data.main?.humidity ?? '';
+      }, (err) => { console.log('Geolocation denied or failed', err); });
+    }catch(e){ console.log('autoFillLocation error',e); }
+  }
+
+  // init
+  autoFillLocation();
+
+  // Reset button
+  document.getElementById('clear-form').addEventListener('click', ()=>{
+    document.getElementById('predict-form').reset();
+  });
+
+</script>
+</body>
+</html>

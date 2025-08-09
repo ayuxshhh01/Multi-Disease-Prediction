@@ -1,0 +1,22 @@
+{
+  "Common Cold": "Drink warm fluids, rest, and take paracetamol for fever.",
+  "COVID-19": "Isolate yourself, wear a mask, consult a doctor, and monitor oxygen levels.",
+  "Malaria": "Use antimalarial medication such as chloroquine and stay hydrated.",
+  "Dengue": "Avoid aspirin/NSAIDs, stay hydrated, and get platelet count checked regularly.",
+  "Flu": "Rest, stay hydrated, take antiviral medication like oseltamivir if prescribed.",
+  "Diabetes": "Maintain a low-sugar diet, monitor blood glucose, and take insulin/oral meds as prescribed.",
+  "Heart Disease": "Take prescribed medications (e.g., beta-blockers), avoid stress, reduce salt, and monitor blood pressure.",
+  "Asthma": "Use bronchodilators (inhalers), avoid allergens, and take corticosteroids as needed.",
+  "Pneumonia": "Antibiotics (if bacterial), rest, and drink plenty of fluids. Hospitalization may be needed for severe cases.",
+  "Tuberculosis": "Take full course of anti-TB drugs (e.g., isoniazid, rifampicin) under medical supervision.",
+  "Cancer": "Consult an oncologist. Treatment may include chemotherapy, radiation, or surgery.",
+  "Stroke": "Immediate emergency care needed. Use of clot-busting drugs (like tPA) within 3–4.5 hours is crucial.",
+  "Hypertension": "Take antihypertensive medication regularly, reduce sodium intake, and monitor BP daily.",
+  "Typhoid": "Take antibiotics like azithromycin or ceftriaxone and maintain fluid intake.",
+  "Migraine": "Use triptans or NSAIDs, avoid bright lights, and rest in a quiet room.",
+  "Anemia": "Increase iron intake (meat, spinach), take iron supplements, and treat underlying cause.",
+  "Hepatitis": "Avoid alcohol, rest, and follow antiviral therapy as prescribed by a hepatologist.",
+  "Bronchitis": "Rest, drink fluids, and use inhalers or antibiotics if bacterial.",
+  "Gastroenteritis": "Stay hydrated, eat bland food, and use antidiarrheal meds if needed.",
+  "Sepsis": "Seek emergency medical help. Treated with IV fluids, antibiotics, and organ support."
+}
